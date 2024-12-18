@@ -32,7 +32,7 @@ Ensure you have the following dependencies installed:
 2. Navigate to the project directory.
 3. Run the Python script:
    ```bash
-   python gesture_control.py
+   python gesture_scrolling.py
    ```
 4. Ensure your webcam is connected and active.
 5. Open a PDF in Microsoft Edge or any other application where scrolling is needed.
