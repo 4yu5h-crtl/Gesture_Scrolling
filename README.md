@@ -38,8 +38,8 @@ Ensure you have the following dependencies installed:
 5. Open a PDF in Microsoft Edge or any other application where scrolling is needed.
 
 ## Usage
-1. **Up Gesture**: Point your index finger upwards to scroll up.
-2. **Down Gesture**: Point your index finger downwards to scroll down.
+1. **Up Gesture**: Raise your index finger to scroll up.
+2. **Down Gesture**: Raise both the index and middle fingers to scroll down.
 3. **Stopping Scrolling**: Press the `q` key in the OpenCV window to quit the program.
 
 ## Files
