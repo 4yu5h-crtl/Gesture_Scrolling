@@ -3,11 +3,8 @@ import mediapipe as mp
 import numpy as np
 import pyautogui
 
-# Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.5)
-
-# OpenCV window setup
 cv2.namedWindow("Gesture Control", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Gesture Control", 640, 480)
 
@@ -17,69 +14,41 @@ def recognize_gesture(frame):
         return None
     
     hand_landmarks = results.multi_hand_landmarks[0]
-    
-    # Get index finger tip and middle point coordinates
-    index_tip = np.array([hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y])
-    index_pip = np.array([hand_landmarks.landmark[6].x, hand_landmarks.landmark[6].y])
-    
-    # Calculate direction vector
-    direction = index_tip[1] - index_pip[1]  # Compare y-coordinates
-    
-    # Recognize gestures based on finger direction
-    threshold = 0.05
-    if direction < -threshold:  # Finger pointing up
-        return "up"
-    elif direction > threshold:  # Finger pointing down
-        return "down"
-    else:
-        return None
+    tips = [8, 12]
+    bases = [6, 10]
+    raised_fingers = sum(
+        1 for tip, base in zip(tips, bases)
+        if hand_landmarks.landmark[tip].y < hand_landmarks.landmark[base].y
+    )
+    return "scroll_up" if raised_fingers == 1 else "scroll_down" if raised_fingers == 2 else None
 
 def scroll_up():
-    print("Scrolling up")
-    pyautogui.press("up")  # Simulates Arrow Up key press
-    
+    pyautogui.scroll(100)
+
 def scroll_down():
-    print("Scrolling down")
-    pyautogui.press("down")  # Simulates Arrow Down key press
-    
+    pyautogui.scroll(-100)
+
 def main():
     cap = cv2.VideoCapture(0)
-    
-    # Add status variable to track if scrolling is active
-    scrolling_active = True
-    
     while True:
         ret, frame = cap.read()
         if not ret:
             break
-            
         frame = cv2.flip(frame, 1)
         gesture = recognize_gesture(frame)
+        if gesture == "scroll_up":
+            scroll_up()
+        elif gesture == "scroll_down":
+            scroll_down()
         
-        # Handle different gestures
-        if scrolling_active:
-            if gesture == "up":
-                scroll_up()
-            elif gesture == "down":
-                scroll_down()
-        
-        # Draw hand landmarks
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = hands.process(frame_rgb)
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 mp.solutions.drawing_utils.draw_landmarks(
-                    frame,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS)
-        
-        # Display status on frame
-        status_text = "ACTIVE" if scrolling_active else "STOPPED"
-        cv2.putText(frame, f"Status: {status_text}", (10, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0) if scrolling_active else (0, 0, 255), 2)
-        
+                    frame, hand_landmarks, mp_hands.HAND_CONNECTIONS
+                )
         cv2.imshow("Gesture Control", frame)
-        
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
